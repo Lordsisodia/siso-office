@@ -40,21 +40,21 @@ export const CORRIDOR_CENTER = {
 } as const;
 
 export const ZONE_COLORS = {
-  desk: "#f4f6f9",
-  meeting: "#eef3fa",
-  hotDesk: "#f1f3f7",
-  lounge: "#f3f1f7",
-  corridor: "#e8ecf1",
-  wall: "#8b9bb0",
+  desk: "#ffffff",
+  meeting: "#ffffff",
+  hotDesk: "#ffffff",
+  lounge: "#ffffff",
+  corridor: "#ffffff",
+  wall: "#ffffff",
 } as const;
 
 export const ZONE_COLORS_DARK = {
-  desk: "#1e293b",
-  meeting: "#1a2744",
-  hotDesk: "#1e2433",
-  lounge: "#231e33",
-  corridor: "#0f172a",
-  wall: "#475569",
+  desk: "#ffffff",
+  meeting: "#ffffff",
+  hotDesk: "#ffffff",
+  lounge: "#ffffff",
+  corridor: "#ffffff",
+  wall: "#ffffff",
 } as const;
 
 export const STATUS_COLORS: Record<AgentVisualStatus, string> = {

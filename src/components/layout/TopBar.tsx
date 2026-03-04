@@ -30,6 +30,8 @@ export function TopBar({ isMobile = false }: TopBarProps) {
   const metrics = useOfficeStore((s) => s.globalMetrics);
   const viewMode = useOfficeStore((s) => s.viewMode);
   const setViewMode = useOfficeStore((s) => s.setViewMode);
+  const currentFloor = useOfficeStore((s) => s.currentFloor);
+  const setFloor = useOfficeStore((s) => s.setFloor);
   const theme = useOfficeStore((s) => s.theme);
   const setTheme = useOfficeStore((s) => s.setTheme);
   const currentPage = useOfficeStore((s) => s.currentPage);
@@ -44,6 +46,8 @@ export function TopBar({ isMobile = false }: TopBarProps) {
         <OfficeTopBarContent
           viewMode={viewMode}
           setViewMode={setViewMode}
+          currentFloor={currentFloor}
+          setFloor={setFloor}
           metrics={metrics}
           webglAvailable={webglAvailable}
           isMobile={isMobile}
@@ -69,12 +73,16 @@ export function TopBar({ isMobile = false }: TopBarProps) {
 function OfficeTopBarContent({
   viewMode,
   setViewMode,
+  currentFloor,
+  setFloor,
   metrics,
   webglAvailable,
   isMobile,
 }: {
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
+  currentFloor: number;
+  setFloor: (floor: number) => void;
   metrics: { activeAgents: number; totalAgents: number; totalTokens: number };
   webglAvailable: boolean;
   isMobile?: boolean;
@@ -95,6 +103,10 @@ function OfficeTopBarContent({
         setViewMode={setViewMode}
         webglAvailable={webglAvailable}
         isMobile={isMobile}
+      />
+      <FloorSelector
+        currentFloor={currentFloor}
+        setFloor={setFloor}
       />
       <div className="mx-8 flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
         <span>
@@ -218,6 +230,41 @@ function ViewModeSwitch({
                 : disabled
                   ? "cursor-not-allowed text-gray-300 dark:text-gray-600"
                   : "text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+            }`}
+          >
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function FloorSelector({
+  currentFloor,
+  setFloor,
+}: {
+  currentFloor: number;
+  setFloor: (floor: number) => void;
+}) {
+  const floors = [
+    { key: 1, label: "F1" },
+    { key: 2, label: "F2" },
+    { key: 3, label: "F3" },
+  ];
+
+  return (
+    <div className="ml-4 flex items-center rounded-md bg-gray-100 p-0.5 dark:bg-gray-800">
+      {floors.map(({ key, label }) => {
+        const isActive = currentFloor === key;
+        return (
+          <button
+            key={key}
+            onClick={() => setFloor(key)}
+            className={`rounded px-3 py-1 text-xs font-medium transition-colors ${
+              isActive
+                ? "bg-cyan-600 text-white shadow-sm"
+                : "text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
             }`}
           >
             {label}

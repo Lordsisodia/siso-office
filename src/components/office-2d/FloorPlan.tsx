@@ -21,34 +21,48 @@ export function FloorPlan() {
   const agents = useOfficeStore((s) => s.agents);
   const links = useOfficeStore((s) => s.links);
   const theme = useOfficeStore((s) => s.theme);
+  const currentFloor = useOfficeStore((s) => s.currentFloor);
 
   const agentList = Array.from(agents.values());
   const isDark = theme === "dark";
   const colors = isDark ? ZONE_COLORS_DARK : ZONE_COLORS;
 
+  const getAgentFloor = (agentId: string): number => {
+    let hash = 0;
+    for (let i = 0; i < agentId.length; i++) {
+      hash = ((hash << 5) - hash + agentId.charCodeAt(i)) | 0;
+    }
+    return (Math.abs(hash) % 3) + 1;
+  };
+
+  const floorAgents = useMemo(
+    () => agentList.filter((a) => getAgentFloor(a.id) === currentFloor || a.isPlaceholder),
+    [agentList, currentFloor],
+  );
+
   const deskAgents = useMemo(
-    () => agentList.filter((a) => a.zone === "desk" && !a.isSubAgent && !a.movement && a.confirmed),
-    [agentList],
+    () => floorAgents.filter((a) => a.zone === "desk" && !a.isSubAgent && !a.movement && a.confirmed),
+    [floorAgents],
   );
   const hotDeskAgents = useMemo(
-    () => agentList.filter((a) => a.zone === "hotDesk" && !a.movement),
-    [agentList],
+    () => floorAgents.filter((a) => a.zone === "hotDesk" && !a.movement),
+    [floorAgents],
   );
   const loungeAgents = useMemo(
-    () => agentList.filter((a) => a.zone === "lounge" && !a.movement),
-    [agentList],
+    () => floorAgents.filter((a) => a.zone === "lounge" && !a.movement),
+    [floorAgents],
   );
   const meetingAgents = useMemo(
-    () => agentList.filter((a) => a.zone === "meeting" && !a.movement),
-    [agentList],
+    () => floorAgents.filter((a) => a.zone === "meeting" && !a.movement),
+    [floorAgents],
   );
   const walkingAgents = useMemo(
-    () => agentList.filter((a) => a.movement !== null),
-    [agentList],
+    () => floorAgents.filter((a) => a.movement !== null),
+    [floorAgents],
   );
   const corridorAgents = useMemo(
-    () => agentList.filter((a) => a.zone === "corridor" && !a.movement),
-    [agentList],
+    () => floorAgents.filter((a) => a.zone === "corridor" && !a.movement),
+    [floorAgents],
   );
 
   const maxSubAgents = useOfficeStore((s) => s.maxSubAgents);
@@ -103,7 +117,7 @@ export function FloorPlan() {
               width="27"
               height="27"
               fill="none"
-              stroke={isDark ? "#1f2937" : "#d5dbe3"}
+              stroke={isDark ? "#4b5563" : "#d5dbe3"}
               strokeWidth="0.3"
               rx="1"
             />
@@ -111,7 +125,7 @@ export function FloorPlan() {
           {/* Subtle carpet texture for lounge */}
           <pattern id="lounge-carpet" width="6" height="6" patternUnits="userSpaceOnUse">
             <rect width="6" height="6" fill={colors.lounge} />
-            <circle cx="3" cy="3" r="0.5" fill={isDark ? "#2d2540" : "#e5e0ed"} opacity="0.4" />
+            <circle cx="3" cy="3" r="0.5" fill={isDark ? "#4c1d95" : "#e5e0ed"} opacity="0.4" />
           </pattern>
         </defs>
 
@@ -222,7 +236,7 @@ export function FloorPlan() {
       </svg>
 
       {/* ── Layer 9: HTML Overlay speech bubbles ── */}
-      {agentList
+      {floorAgents
         .filter((a) => a.speechBubble)
         .map((agent) => (
           <SpeechBubbleOverlay key={`bubble-${agent.id}`} agent={agent} />
@@ -247,23 +261,23 @@ function CorridorFloor({ isDark }: { isDark: boolean }) {
       <rect x={hCorrX} y={hCorrY} width={OFFICE.width} height={cw} fill="url(#corridor-tiles)" />
       {/* Vertical corridor */}
       <rect x={vCorrX} y={vCorrY} width={cw} height={OFFICE.height} fill="url(#corridor-tiles)" />
-      {/* Corridor center guide lines */}
-      <line
-        x1={hCorrX}
-        y1={hCorrY + cw / 2}
-        x2={hCorrX + OFFICE.width}
-        y2={hCorrY + cw / 2}
-        stroke={isDark ? "#334155" : "#c8d0dc"}
-        strokeWidth={0.5}
-        strokeDasharray="8 6"
-        opacity={0.6}
-      />
-      <line
-        x1={vCorrX + cw / 2}
-        y1={vCorrY}
-        x2={vCorrX + cw / 2}
-        y2={vCorrY + OFFICE.height}
-        stroke={isDark ? "#334155" : "#c8d0dc"}
+        {/* Corridor center guide lines */}
+        <line
+          x1={hCorrX}
+          y1={hCorrY + cw / 2}
+          x2={hCorrX + OFFICE.width}
+          y2={hCorrY + cw / 2}
+          stroke={isDark ? "#e5e7eb" : "#c8d0dc"}
+          strokeWidth={0.5}
+          strokeDasharray="8 6"
+          opacity={0.6}
+        />
+        <line
+          x1={vCorrX + cw / 2}
+          y1={vCorrY}
+          x2={vCorrX + cw / 2}
+          y2={vCorrY + OFFICE.height}
+          stroke={isDark ? "#e5e7eb" : "#c8d0dc"}
         strokeWidth={0.5}
         strokeDasharray="8 6"
         opacity={0.6}
@@ -274,8 +288,8 @@ function CorridorFloor({ isDark }: { isDark: boolean }) {
 
 /** Internal partition walls between zones — double-line architectural style */
 function PartitionWalls({ isDark }: { isDark: boolean }) {
-  const wallColor = isDark ? "#475569" : "#8b9bb0";
-  const fillColor = isDark ? "#334155" : "#c8d0dc";
+  const wallColor = isDark ? "#e5e7eb" : "#8b9bb0";
+  const fillColor = isDark ? "#f3f4f6" : "#c8d0dc";
   const wallW = 4;
   const cw = OFFICE.corridorWidth;
   const midX = OFFICE.x + (OFFICE.width - cw) / 2;
@@ -322,7 +336,7 @@ function DoorOpenings({ isDark }: { isDark: boolean }) {
   const midY = OFFICE.y + (OFFICE.height - cw) / 2;
   const doorWidth = 40;
   const doorColor = isDark ? ZONE_COLORS_DARK.corridor : ZONE_COLORS.corridor;
-  const arcColor = isDark ? "#64748b" : "#94a3b8";
+  const arcColor = isDark ? "#d1d5db" : "#94a3b8";
 
   // Door positions: where walls meet corridor, centered on each wall segment
   const doors = [

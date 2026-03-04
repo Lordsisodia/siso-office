@@ -222,6 +222,7 @@ export const useOfficeStore = create<OfficeStore>()(
     connectionError: null,
     selectedAgentId: null,
     viewMode: "2d" as ViewMode,
+    currentFloor: 1,
     eventHistory: [],
     sidebarCollapsed: false,
     lastSessionsSnapshot: null,
@@ -777,6 +778,12 @@ export const useOfficeStore = create<OfficeStore>()(
     setViewMode: (mode: ViewMode) => {
       set((state) => {
         state.viewMode = mode;
+      });
+    },
+
+    setFloor: (floor: number) => {
+      set((state) => {
+        state.currentFloor = floor;
       });
     },
 

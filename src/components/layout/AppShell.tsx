@@ -1,8 +1,6 @@
 import { useEffect, type ReactNode, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { Outlet } from "react-router-dom";
-import { ChatDialog } from "@/components/chat/ChatDialog";
-import { ChatDockBar } from "@/components/chat/ChatDockBar";
 import { RestartBanner } from "@/components/shared/RestartBanner";
 import { ToastContainer } from "@/components/shared/ToastContainer";
 import type { GatewayWsClient } from "@/gateway/ws-client";
@@ -83,8 +81,7 @@ export function AppShell({ children, wsClient, isMobile = false }: AppShellProps
       <div className="relative flex flex-1 overflow-hidden">
         <main className="relative flex flex-1 flex-col overflow-hidden">
           <div className="relative flex-1 overflow-hidden">{content}</div>
-          <ChatDialog />
-          <ChatDockBar />
+          {/* Chat disabled - use Console for agent management */}
         </main>
         {isMobile ? (
           <>

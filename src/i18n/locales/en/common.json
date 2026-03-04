@@ -56,10 +56,10 @@
     }
   },
   "zones": {
-    "desk": "Desk Zone",
-    "meeting": "Meeting Zone",
-    "hotDesk": "Hot Desk Zone",
-    "lounge": "Lounge Zone"
+    "desk": "Execution Zone",
+    "meeting": "Meeting Room",
+    "hotDesk": "Research Zone",
+    "lounge": "Lounge"
   },
   "errors": {
     "notConnected": "Not connected to Gateway",

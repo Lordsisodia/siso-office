@@ -245,6 +245,7 @@ export interface OfficeStore {
   connectionError: string | null;
   selectedAgentId: string | null;
   viewMode: ViewMode;
+  currentFloor: number;
   eventHistory: EventHistoryItem[];
   sidebarCollapsed: boolean;
   lastSessionsSnapshot: SessionSnapshot | null;
@@ -300,6 +301,7 @@ export interface OfficeStore {
   // UI actions
   selectAgent: (id: string | null) => void;
   setViewMode: (mode: ViewMode) => void;
+  setFloor: (floor: number) => void;
   setConnectionStatus: (status: ConnectionStatus, error?: string) => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   setTheme: (theme: ThemeMode) => void;
