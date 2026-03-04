@@ -12,7 +12,7 @@ import { Environment3D } from "./Environment3D";
 import { OfficeLayout3D } from "./OfficeLayout3D";
 import { ParentChildLine } from "./ParentChildLine";
 
-const SCENE_CENTER: [number, number, number] = [8, 0, 6];
+const SCENE_CENTER: [number, number, number] = [8, 4, 6];
 const BG_LIGHT = new THREE.Color("#e8ecf2");
 const BG_DARK = new THREE.Color("#0f1729");
 
@@ -94,29 +94,31 @@ function SceneContent() {
         enableRotate={true}
         enablePan={true}
         enableZoom={true}
-        minPolarAngle={Math.PI / 8}
-        maxPolarAngle={Math.PI / 2.8}
+        minPolarAngle={Math.PI / 12}
+        maxPolarAngle={Math.PI / 2.2}
         minDistance={10}
-        maxDistance={40}
+        maxDistance={120}
         target={SCENE_CENTER}
         enableDamping
         dampingFactor={0.08}
       />
       <Environment3D theme={theme} />
-      <OfficeLayout3D />
-      {agentList.map((agent) => (
-        <AgentCharacter key={agent.id} agent={agent} />
-      ))}
-      {agentList
-        .filter((a) => a.isSubAgent && a.parentAgentId)
-        .map((child) => {
-          const parent = agents.get(child.parentAgentId!);
-          if (!parent) {
-            return null;
-          }
-          return <ParentChildLine key={`line-${child.id}`} parent={parent} child={child} />;
-        })}
-      <MeetingLabels />
+      <group position={[0, 4, 0]}>
+        <OfficeLayout3D />
+        {agentList.map((agent) => (
+          <AgentCharacter key={agent.id} agent={agent} />
+        ))}
+        {agentList
+          .filter((a) => a.isSubAgent && a.parentAgentId)
+          .map((child) => {
+            const parent = agents.get(child.parentAgentId!);
+            if (!parent) {
+              return null;
+            }
+            return <ParentChildLine key={`line-${child.id}`} parent={parent} child={child} />;
+          })}
+        <MeetingLabels />
+      </group>
       {bloomEnabled && (
         <EffectComposer>
           <Bloom intensity={1.2} luminanceThreshold={0.6} luminanceSmoothing={0.4} mipmapBlur />
@@ -134,7 +136,7 @@ export default function Scene3D() {
         shadows
         camera={{
           fov: 42,
-          position: [22, 15, 22],
+          position: [22, 10, 22],
           near: 0.1,
           far: 200,
         }}

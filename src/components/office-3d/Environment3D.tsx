@@ -1,180 +1,7 @@
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
 import type { ThemeMode } from "@/gateway/types";
-
-const WALL_HEIGHT = 2.8;
-const WALL_THICKNESS = 0.12;
-
-function getThemeColors(_theme: ThemeMode) {
-  return {
-    FLOOR_COLOR: "#ffffff",
-    WALL_COLOR: "#ffffff",
-    WALL_EDGE_COLOR: "#e5e7eb",
-    WINDOW_COLOR: "#bfdbfe",
-    WINDOW_EMISSIVE: "#93c5fd",
-  };
-}
-
-function Wall({
-  position,
-  size,
-  theme,
-}: {
-  position: [number, number, number];
-  size: [number, number, number];
-  theme?: ThemeMode;
-}) {
-  const colors = getThemeColors(theme ?? "dark");
-  return (
-    <mesh position={position} castShadow receiveShadow>
-      <boxGeometry args={size} />
-      <meshStandardMaterial color={colors.WALL_COLOR} roughness={0.3} metalness={0.1} />
-    </mesh>
-  );
-}
-
-function WallWithWindows({
-  start,
-  end,
-  windowCount,
-  side,
-  theme,
-}: {
-  start: [number, number, number];
-  end: [number, number, number];
-  windowCount?: number;
-  side?: "front" | "back" | "left" | "right";
-  theme?: ThemeMode;
-}) {
-  const colors = getThemeColors(theme ?? "dark");
-  const dx = end[0] - start[0];
-  const dz = end[2] - start[2];
-  const length = Math.sqrt(dx * dx + dz * dz);
-  const midX = (start[0] + end[0]) / 2;
-  const midZ = (start[2] + end[2]) / 2;
-
-  const isXAxis = Math.abs(dx) > Math.abs(dz);
-  const rotY = isXAxis ? 0 : Math.PI / 2;
-
-  const wallThick = WALL_THICKNESS;
-  const windowWidth = 1.8;
-  const windowHeight = 2.2;
-  const windowY = 1.2;
-  const winCount = windowCount ?? 2;
-  const winSide = side ?? "front";
-
-  const windows = useMemo(() => {
-    const wins: Array<{ pos: [number, number, number] }> = [];
-    for (let i = 1; i <= winCount; i++) {
-      const t = i / (winCount + 1);
-      wins.push({
-        pos: [start[0] + dx * t, windowY, start[2] + dz * t],
-      });
-    }
-    return wins;
-  }, [start, dx, dz, winCount, windowY]);
-
-  const thickDir: [number, number, number] = isXAxis ? [0, 0, wallThick] : [wallThick, 0, 0];
-
-  return (
-    <group>
-      <mesh
-        position={[midX, WALL_HEIGHT / 2, midZ]}
-        rotation={[0, rotY, 0]}
-        castShadow
-        receiveShadow
-      >
-        <boxGeometry args={[length, WALL_HEIGHT, wallThick]} />
-        <meshStandardMaterial
-          color={colors.WALL_COLOR}
-          roughness={0.3}
-          metalness={0.1}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-
-      {/* Wall top edge */}
-      <mesh position={[midX, WALL_HEIGHT - 0.02, midZ]} rotation={[0, rotY, 0]}>
-        <boxGeometry args={[length, 0.04, wallThick + 0.02]} />
-        <meshStandardMaterial color={colors.WALL_EDGE_COLOR} roughness={0.5} />
-      </mesh>
-
-      {/* Windows */}
-      {windows.map((w, i) => (
-        <mesh
-          key={`win-${winSide}-${i}`}
-          position={[w.pos[0] + thickDir[0] * 0.5, w.pos[1], w.pos[2] + thickDir[2] * 0.5]}
-          rotation={[0, rotY, 0]}
-        >
-          <planeGeometry args={[windowWidth, windowHeight]} />
-          <meshStandardMaterial
-            color={colors.WINDOW_COLOR}
-            emissive={colors.WINDOW_EMISSIVE}
-            emissiveIntensity={0.4}
-            transparent
-            opacity={0.6}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-function Stairs({
-  position,
-  rotation = 0,
-  steps = 6,
-}: {
-  position: [number, number, number];
-  rotation?: number;
-  steps?: number;
-}) {
-  const stepElements = useMemo(() => {
-    const elems: Array<{ y: number; z: number }> = [];
-    for (let i = 0; i < steps; i++) {
-      elems.push({
-        y: (i * WALL_HEIGHT * 0.4) / steps,
-        z: (i * 1.5) / steps,
-      });
-    }
-    return elems;
-  }, [steps]);
-
-  return (
-    <group position={position} rotation={[0, rotation, 0]}>
-      {stepElements.map((s, i) => (
-        <mesh key={`step-${i}`} position={[0, s.y + 0.05, s.z]} castShadow>
-          <boxGeometry args={[0.8, 0.1, 1.5 / steps + 0.02]} />
-          <meshStandardMaterial color="#b0b8c4" roughness={0.6} />
-        </mesh>
-      ))}
-      {/* Railing */}
-      <mesh position={[0.45, WALL_HEIGHT * 0.25, 0.75]}>
-        <boxGeometry args={[0.03, WALL_HEIGHT * 0.35, 1.6]} />
-        <meshStandardMaterial color="#8898a8" roughness={0.4} metalness={0.4} />
-      </mesh>
-    </group>
-  );
-}
-
-function ServerRack({ position }: { position: [number, number, number] }) {
-  return (
-    <group position={position}>
-      <mesh position={[0, 0.9, 0]} castShadow>
-        <boxGeometry args={[0.5, 1.8, 0.4]} />
-        <meshStandardMaterial color="#5a6878" roughness={0.5} metalness={0.35} />
-      </mesh>
-      {[0.3, 0.6, 0.9, 1.2, 1.5].map((y) => (
-        <mesh key={`led-${y}`} position={[0.26, y, 0]}>
-          <sphereGeometry args={[0.02, 8, 8]} />
-          <meshStandardMaterial color="#22c55e" emissive="#22c55e" emissiveIntensity={2} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
 
 const LIGHT_PARAMS = {
   ambient: { intensity: 0.8, color: new THREE.Color("#ffffff") },
@@ -284,91 +111,219 @@ function ThemeLighting({ theme }: { theme: ThemeMode }) {
 }
 
 export function Environment3D({ theme = "dark" as ThemeMode }: { theme?: ThemeMode }) {
-  const colors = getThemeColors(theme);
-  
   return (
     <group>
       <ThemeLighting theme={theme} />
 
-      {/* === Ground / Base Platform === */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[8, -0.08, 6]} receiveShadow>
-        <planeGeometry args={[22, 18]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.95} />
+      <Skylines />
+
+      {/* Platform base - cylinder */}
+      <mesh position={[8, 2, 6]} castShadow receiveShadow>
+        <cylinderGeometry args={[12, 14, 4, 32]} />
+        <meshStandardMaterial color="#9ca3af" roughness={0.9} />
       </mesh>
 
-      {/* Platform edge (subtle 3D depth) */}
-      <mesh position={[8, -0.04, 6]}>
-        <boxGeometry args={[17, 0.08, 13]} />
+      {/* Office floor on top of platform */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[8, 4.05, 6]} receiveShadow>
+        <circleGeometry args={[9, 32]} />
         <meshStandardMaterial color="#e5e7eb" roughness={0.8} />
       </mesh>
-
-      {/* Main floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[8, 0.01, 6]} receiveShadow>
-        <planeGeometry args={[16, 12]} />
-        <meshStandardMaterial color={colors.FLOOR_COLOR} roughness={0.7} metalness={0.02} />
+      
+      <mesh position={[8, 4.1, 6]}>
+        <boxGeometry args={[18, 0.1, 14]} />
+        <meshStandardMaterial color="#d1d5db" roughness={0.9} />
       </mesh>
 
-      {/* Floor grid lines (very subtle) */}
-      <gridHelper args={[16, 16, "#e5e7eb", "#f3f4f6"]} position={[8, 0.02, 6]} />
-
-      {/* === Walls === */}
-      {/* Back wall (north) */}
-      <WallWithWindows start={[0, 0, 0]} end={[16, 0, 0]} windowCount={4} side="back" theme={theme} />
-      {/* Left wall (west) */}
-      <WallWithWindows start={[0, 0, 0]} end={[0, 0, 12]} windowCount={3} side="left" theme={theme} />
-      {/* Right wall (east) — with entrance opening in lounge zone */}
-      <Wall position={[16, WALL_HEIGHT / 2, 2]} size={[WALL_THICKNESS, WALL_HEIGHT, 4]} theme={theme} />
-      {/* Right wall lower section, split for entrance door at z≈11 */}
-      <Wall position={[16, WALL_HEIGHT / 2, 8.2]} size={[WALL_THICKNESS, WALL_HEIGHT, 2.4]} theme={theme} />
-      <Wall position={[16, WALL_HEIGHT / 2, 11.7]} size={[WALL_THICKNESS, WALL_HEIGHT, 0.6]} theme={theme} />
-      {/* Door frame — entrance opening z=9.4 to z=11.4 */}
-      <mesh position={[16, WALL_HEIGHT - 0.05, 10.4]}>
-        <boxGeometry args={[WALL_THICKNESS + 0.04, 0.1, 2.1]} />
-        <meshStandardMaterial color={colors.WALL_EDGE_COLOR} roughness={0.4} metalness={0.3} />
-      </mesh>
-      {/* Right wall windows */}
-      <mesh position={[16.07, 1.3, 2]} rotation={[0, Math.PI / 2, 0]}>
-        <planeGeometry args={[1.8, 2.2]} />
-        <meshStandardMaterial
-          color={colors.WINDOW_COLOR}
-          emissive={colors.WINDOW_EMISSIVE}
-          emissiveIntensity={0.4}
-          transparent
-          opacity={0.5}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      {/* Welcome mat at entrance */}
-      <mesh position={[16, 0.02, 10.4]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[0.6, 1.5]} />
-        <meshStandardMaterial color="#b0a090" roughness={0.95} />
-      </mesh>
-
-      {/* === Interior Dividers (glass-like, lower) === */}
-      {/* Divider between desk zone and meeting zone */}
-      <Wall position={[8, WALL_HEIGHT * 0.35, 3]} size={[WALL_THICKNESS, WALL_HEIGHT * 0.7, 5.5]} theme={theme} />
-      {/* Top accent stripe on divider */}
-      <mesh position={[8, WALL_HEIGHT * 0.7, 3]}>
-        <boxGeometry args={[0.04, 0.03, 5.5]} />
-        <meshStandardMaterial color={colors.WINDOW_COLOR} emissive={colors.WINDOW_EMISSIVE} emissiveIntensity={0.3} />
-      </mesh>
-
-      {/* Divider between work area and lounge */}
-      <Wall
-        position={[8, WALL_HEIGHT * 0.28, 9]}
-        size={[WALL_THICKNESS, WALL_HEIGHT * 0.56, 5.5]}
-        theme={theme}
-      />
-
-      {/* Horizontal divider separating top/bottom zones */}
-      <Wall position={[4, WALL_HEIGHT * 0.3, 6]} size={[7.5, WALL_HEIGHT * 0.6, WALL_THICKNESS]} theme={theme} />
-
-      {/* === Stairs === */}
-      <Stairs position={[15, 0, 5.5]} rotation={Math.PI} steps={5} />
-
-      {/* === Server Racks === */}
-      <ServerRack position={[15.2, 0, 1]} />
-      <ServerRack position={[15.2, 0, 1.7]} />
+      <GlassWall start={[0, 4, 0]} end={[16, 4, 0]} />
+      <GlassWall start={[0, 4, 12]} end={[16, 4, 12]} />
+      <GlassWall start={[0, 4, 0]} end={[0, 4, 12]} />
+      <GlassWall start={[16, 4, 0]} end={[16, 4, 3]} />
+      <GlassWall start={[16, 4, 5]} end={[16, 4, 12]} />
     </group>
+  );
+}
+
+function Skylines() {
+  return (
+    <group>
+      <Ocean />
+      <Island />
+      <DistantIslands />
+      <Clouds />
+    </group>
+  );
+}
+
+function Ocean() {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef2 = useRef<THREE.Mesh>(null);
+  
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    if (meshRef.current) {
+      meshRef.current.position.y = -0.5 + Math.sin(t * 0.5) * 0.1;
+    }
+    if (meshRef.current) {
+      meshRef.current.position.y = -0.4 + Math.sin(t * 0.7 + 1) * 0.08;
+    }
+  });
+  
+  return (
+    <group>
+      <mesh ref={meshRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, -60]} receiveShadow>
+        <planeGeometry args={[500, 400]} />
+        <meshStandardMaterial color="#0ea5e9" roughness={0.15} metalness={0.1} />
+      </mesh>
+      <mesh ref={meshRef2} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.4, -60]}>
+        <planeGeometry args={[500, 400]} />
+        <meshStandardMaterial color="#38bdf8" transparent opacity={0.4} roughness={0.1} />
+      </mesh>
+    </group>
+  );
+}
+
+function Island() {
+  return (
+    <group position={[30, -2, -20]}>
+      {/* Base sand layer */}
+      <mesh position={[0, 0, 0]}>
+        <cylinderGeometry args={[45, 40, 2, 64]} />
+        <meshStandardMaterial color="#eab308" roughness={0.95} />
+      </mesh>
+      
+      {/* Grass/terrain with height variation */}
+      <mesh position={[0, 1.5, 0]}>
+        <cylinderGeometry args={[38, 35, 3, 64]} />
+        <meshStandardMaterial color="#65a30d" roughness={0.9} />
+      </mesh>
+      
+      {/* Higher terrain - back area */}
+      <mesh position={[-8, 3.5, -8]}>
+        <cylinderGeometry args={[22, 18, 4, 48]} />
+        <meshStandardMaterial color="#84cc16" roughness={0.85} />
+      </mesh>
+      
+      {/* Tiny hill */}
+      <mesh position={[12, 3, 8]}>
+        <cylinderGeometry args={[12, 8, 4, 32]} />
+        <meshStandardMaterial color="#65a30d" roughness={0.9} />
+      </mesh>
+      
+      {/* Another hill */}
+      <mesh position={[-15, 2.5, 5]}>
+        <cylinderGeometry args={[10, 6, 3, 24]} />
+        <meshStandardMaterial color="#84cc16" roughness={0.88} />
+      </mesh>
+      
+      {/* Rocky outcrop */}
+      <mesh position={[18, 2.5, -12]}>
+        <dodecahedronGeometry args={[7, 0]} />
+        <meshStandardMaterial color="#78716c" roughness={0.95} />
+      </mesh>
+
+      {/* Palm trees */}
+      <PalmTree position={[-15, 4, -8]} />
+      <PalmTree position={[8, 4, 12]} />
+      <PalmTree position={[-12, 5, 8]} />
+      <PalmTree position={[22, 4.5, -5]} />
+      <PalmTree position={[-22, 4.5, 3]} />
+      <PalmTree position={[5, 4, -15]} />
+      <PalmTree position={[-8, 3, 15]} />
+      
+      {/* Beach ring */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.5, 0]}>
+        <ringGeometry args={[35, 48, 64]} />
+        <meshStandardMaterial color="#fef3c7" roughness={0.95} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
+}
+
+function PalmTree({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      <mesh position={[0, 3, 0]}>
+        <cylinderGeometry args={[0.15, 0.2, 8, 8]} />
+        <meshStandardMaterial color="#78350f" roughness={0.9} />
+      </mesh>
+      {[0, 10, 120, 180, 240, 300].map((angle, i) => (
+        <mesh key={i} position={[
+          Math.sin(angle * Math.PI / 180) * 2,
+          6.5,
+          Math.cos(angle * Math.PI / 180) * 2
+        ]} rotation={[0.5, angle * Math.PI / 180, 0.3]}>
+          <boxGeometry args={[0.3, 4, 0.05]} />
+          <meshStandardMaterial color="#166534" roughness={0.8} />
+        </mesh>
+      ))}
+      <mesh position={[0, 7, 0]}>
+        <sphereGeometry args={[0.4, 16, 16]} />
+        <meshStandardMaterial color="#f97316" roughness={0.7} />
+      </mesh>
+    </group>
+  );
+}
+
+function DistantIslands() {
+  return (
+    <group>
+      {[
+        { x: -25, z: -50, s: 0.5 },
+        { x: 40, z: -55, s: 0.6 },
+        { x: -50, z: -60, s: 0.4 },
+        { x: 55, z: -45, s: 0.45 },
+        { x: -60, z: -40, s: 0.35 },
+        { x: 25, z: -65, s: 0.55 },
+      ].map((island, i) => (
+        <group key={i} position={[island.x, -3, island.z]} scale={island.s}>
+          <mesh>
+            <coneGeometry args={[15, 10, 16]} />
+            <meshStandardMaterial color="#65a30d" roughness={0.9} />
+          </mesh>
+          <mesh position={[0, -4, 0]}>
+            <cylinderGeometry args={[12, 15, 3, 16]} />
+            <meshStandardMaterial color="#eab308" roughness={0.9} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function Clouds() {
+  return (
+    <group>
+      {[
+        { x: -15, z: -15, s: 3 },
+        { x: 5, z: -20, s: 4 },
+        { x: 20, z: -12, s: 2.5 },
+        { x: -5, z: -25, s: 3.5 },
+        { x: 12, z: -18, s: 2 },
+        { x: -25, z: -20, s: 2.8 },
+      ].map((c, i) => (
+        <group key={i} position={[c.x, 25, c.z]} scale={c.s}>
+          <mesh><sphereGeometry args={[1.5, 16, 16]} /><meshStandardMaterial color="#ffffff" /></mesh>
+          <mesh position={[1.2, 0.2, 0]}><sphereGeometry args={[1.2, 16, 16]} /><meshStandardMaterial color="#ffffff" /></mesh>
+          <mesh position={[-1, 0.1, 0]}><sphereGeometry args={[1, 16, 16]} /><meshStandardMaterial color="#ffffff" /></mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function GlassWall({ start, end }: { start: [number, number, number]; end: [number, number, number] }) {
+  const dx = end[0] - start[0];
+  const dz = end[2] - start[2];
+  const length = Math.sqrt(dx * dx + dz * dz);
+  const midX = (start[0] + end[0]) / 2;
+  const midY = start[1] + 0.6;
+  const midZ = (start[2] + end[2]) / 2;
+  const rotY = Math.abs(dx) > Math.abs(dz) ? 0 : Math.PI / 2;
+
+  return (
+    <mesh position={[midX, midY, midZ]} rotation={[0, rotY, 0]}>
+      <boxGeometry args={[length, 1.2, 0.02]} />
+      <meshStandardMaterial color="#bfdbfe" transparent opacity={0.3} roughness={0.1} metalness={0.2} side={THREE.DoubleSide} />
+    </mesh>
   );
 }
