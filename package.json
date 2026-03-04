@@ -1,7 +1,7 @@
 {
-  "name": "ciso-office",
+  "name": "siso-office",
   "version": "1.0.0",
-  "description": "CISO Command Center - Virtual office for monitoring AI agents",
+  "description": "SISO Command Center - Virtual office for monitoring AI agents",
   "keywords": [
     "ai-agents",
     "dashboard",
