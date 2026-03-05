@@ -60,13 +60,18 @@ function ZoneMarkers() {
         const [x, , zPos] = position2dTo3d({ x: centerX, y: centerY });
 
         return (
-          <Html key={zone.key} position={[x, 3, zPos]} center transform={false}>
-            <div
-              style={{
-                backgroundColor: zone.color,
-                padding: "4px 8px",
-                borderRadius: "4px",
-                fontSize: "10px",
+          <group key={zone.key}>
+            <mesh position={[x, 0.1, zPos]}>
+              <sphereGeometry args={[0.3, 16, 16]} />
+              <meshStandardMaterial color={zone.color} emissive={zone.color} emissiveIntensity={0.5} />
+            </mesh>
+            <Html position={[x, 3, zPos]} center transform={false}>
+              <div
+                style={{
+                  backgroundColor: zone.color,
+                  padding: "4px 8px",
+                  borderRadius: "4px",
+                  fontSize: "10px",
                 color: "white",
                 fontWeight: "bold",
                 whiteSpace: "nowrap",
@@ -76,6 +81,7 @@ function ZoneMarkers() {
               {zone.label}
             </div>
           </Html>
+          </group>
         );
       })}
     </>
@@ -85,6 +91,54 @@ function ZoneMarkers() {
 const SCENE_CENTER: [number, number, number] = [15, 4, -17];
 const BG_LIGHT = new THREE.Color("#e8ecf2");
 const BG_DARK = new THREE.Color("#0f1729");
+
+function DeskDebugMarkers() {
+  const deskPositions2D = [
+    { x: 80, y: 80 }, { x: 180, y: 80 }, { x: 280, y: 80 }, { x: 380, y: 80 },
+    { x: 80, y: 180 }, { x: 180, y: 180 }, { x: 280, y: 180 }, { x: 380, y: 180 },
+    { x: 80, y: 280 }, { x: 180, y: 280 }, { x: 280, y: 280 }, { x: 380, y: 280 },
+  ];
+  const hotDeskPositions2D = [
+    { x: 580, y: 380 }, { x: 680, y: 380 }, { x: 780, y: 380 },
+    { x: 580, y: 480 }, { x: 680, y: 480 }, { x: 780, y: 480 },
+  ];
+  const loungePositions2D = [
+    { x: 580, y: 80 }, { x: 680, y: 80 }, { x: 780, y: 80 },
+    { x: 580, y: 180 }, { x: 680, y: 180 }, { x: 780, y: 180 },
+  ];
+
+  return (
+    <>
+      {deskPositions2D.map((pos, i) => {
+        const [x, , z] = position2dTo3d(pos);
+        return (
+          <mesh key={`desk-${i}`} position={[x, 0.1, z]}>
+            <boxGeometry args={[0.5, 0.1, 0.3]} />
+            <meshStandardMaterial color="#3b82f6" emissive="#3b82f6" emissiveIntensity={0.3} />
+          </mesh>
+        );
+      })}
+      {hotDeskPositions2D.map((pos, i) => {
+        const [x, , z] = position2dTo3d(pos);
+        return (
+          <mesh key={`hotdesk-${i}`} position={[x, 0.1, z]}>
+            <boxGeometry args={[0.5, 0.1, 0.3]} />
+            <meshStandardMaterial color="#10b981" emissive="#10b981" emissiveIntensity={0.3} />
+          </mesh>
+        );
+      })}
+      {loungePositions2D.map((pos, i) => {
+        const [x, , z] = position2dTo3d(pos);
+        return (
+          <mesh key={`lounge-${i}`} position={[x, 0.1, z]}>
+            <boxGeometry args={[0.5, 0.1, 0.3]} />
+            <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.3} />
+          </mesh>
+        );
+      })}
+    </>
+  );
+}
 
 const MEETING_TABLE_CENTERS_2D = [
   { x: ZONES.meeting.x + ZONES.meeting.width / 2, y: ZONES.meeting.y + ZONES.meeting.height / 2 },
@@ -179,6 +233,7 @@ function SceneContent() {
           <OfficePlatform />
           <IsometricOffice />
           <ZoneMarkers />
+          <DeskDebugMarkers />
           <Preload all />
         </Suspense>
         {/* Old office hidden - using isometric model instead */}
