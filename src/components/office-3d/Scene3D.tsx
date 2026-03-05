@@ -106,33 +106,46 @@ function DeskDebugMarkers() {
     { x: 580, y: 80 }, { x: 680, y: 80 }, { x: 780, y: 80 },
     { x: 580, y: 180 }, { x: 680, y: 180 }, { x: 780, y: 180 },
   ];
+  const meetingPositions2D = [
+    { x: 580, y: 480 }, { x: 680, y: 480 }, { x: 780, y: 480 },
+    { x: 580, y: 580 }, { x: 680, y: 580 }, { x: 780, y: 580 },
+  ];
 
   return (
     <>
       {deskPositions2D.map((pos, i) => {
         const [x, , z] = position2dTo3d(pos);
         return (
-          <mesh key={`desk-${i}`} position={[x, 0.1, z]}>
-            <boxGeometry args={[0.5, 0.1, 0.3]} />
-            <meshStandardMaterial color="#3b82f6" emissive="#3b82f6" emissiveIntensity={0.3} />
+          <mesh key={`desk-${i}`} position={[x, 0.5, z]}>
+            <boxGeometry args={[0.4, 0.8, 0.3]} />
+            <meshStandardMaterial color="#3b82f6" emissive="#3b82f6" emissiveIntensity={0.5} />
           </mesh>
         );
       })}
       {hotDeskPositions2D.map((pos, i) => {
         const [x, , z] = position2dTo3d(pos);
         return (
-          <mesh key={`hotdesk-${i}`} position={[x, 0.1, z]}>
-            <boxGeometry args={[0.5, 0.1, 0.3]} />
-            <meshStandardMaterial color="#10b981" emissive="#10b981" emissiveIntensity={0.3} />
+          <mesh key={`hotdesk-${i}`} position={[x, 0.5, z]}>
+            <boxGeometry args={[0.4, 0.8, 0.3]} />
+            <meshStandardMaterial color="#10b981" emissive="#10b981" emissiveIntensity={0.5} />
           </mesh>
         );
       })}
       {loungePositions2D.map((pos, i) => {
         const [x, , z] = position2dTo3d(pos);
         return (
-          <mesh key={`lounge-${i}`} position={[x, 0.1, z]}>
-            <boxGeometry args={[0.5, 0.1, 0.3]} />
-            <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.3} />
+          <mesh key={`lounge-${i}`} position={[x, 0.5, z]}>
+            <boxGeometry args={[0.4, 0.8, 0.3]} />
+            <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.5} />
+          </mesh>
+        );
+      })}
+      {meetingPositions2D.map((pos, i) => {
+        const [x, , z] = position2dTo3d(pos);
+        return (
+          <mesh key={`meeting-${i}`} position={[x, 0.5, z]}>
+            <boxGeometry args={[0.4, 0.8, 0.3]} />
+            <meshStandardMaterial color="#8b5cf6" emissive="#8b5cf6" emissiveIntensity={0.5} />
           </mesh>
         );
       })}

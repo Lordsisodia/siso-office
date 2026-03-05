@@ -83,9 +83,9 @@ export function allocatePosition(
 
 /** Map 2D SVG coordinates to 3D world coordinates: x→x, y→z, ground plane y=0 */
 export function position2dTo3d(pos: { x: number; y: number }): [number, number, number] {
-  const SCALE = 0.04;
-  const OFFSET_X = 10;
-  const OFFSET_Z = -20;
+  const SCALE = 0.015;
+  const OFFSET_X = 18;
+  const OFFSET_Z = -22;
   return [pos.x * SCALE + OFFSET_X, 0, pos.y * SCALE + OFFSET_Z];
 }
 
