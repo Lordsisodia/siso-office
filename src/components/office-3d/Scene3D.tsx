@@ -14,14 +14,8 @@ import { OfficeLayout3D } from "./OfficeLayout3D";
 import { ParentChildLine } from "./ParentChildLine";
 
 function IsometricOffice() {
-  try {
-    const { scene } = useGLTF("/isometric_office.glb");
-    const clonedScene = useMemo(() => scene.clone(true), [scene]);
-    return <primitive object={clonedScene} scale={0.3} position={[0, 0, 0]} />;
-  } catch (e) {
-    console.warn("Failed to load isometric office model:", e);
-    return null;
-  }
+  const { scene } = useGLTF("/isometric_office.glb");
+  return <primitive object={scene} scale={1} position={[10, 0, 6]} />;
 }
 
 const SCENE_CENTER: [number, number, number] = [8, 4, 6];
