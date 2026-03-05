@@ -505,6 +505,98 @@ class SubAgentSimulator {
   }
 }
 
+class MovementSimulator {
+  private timers: ReturnType<typeof setTimeout>[] = [];
+  private running = false;
+  private activeAgents = new Set<string>();
+
+  constructor(
+    private emit: (event: string, payload: unknown) => void,
+  ) {}
+
+  start(agentIds: string[]): void {
+    if (this.running) return;
+    this.running = true;
+    this.activeAgents = new Set(agentIds);
+    this.scheduleRandomMovement(2000);
+  }
+
+  stop(): void {
+    this.running = false;
+    for (const t of this.timers) clearTimeout(t);
+    this.timers = [];
+  }
+
+  updateAgents(agentIds: string[]): void {
+    this.activeAgents = new Set(agentIds);
+  }
+
+  private schedule(fn: () => void, ms: number): void {
+    const t = setTimeout(fn, ms);
+    this.timers.push(t);
+  }
+
+  private scheduleRandomMovement(delayMs: number): void {
+    this.schedule(() => {
+      if (!this.running) return;
+      this.randomlyMoveAgent();
+      this.scheduleRandomMovement(randRange(3000, 8000));
+    }, delayMs);
+  }
+
+  private randomlyMoveAgent(): void {
+    const agents = Array.from(this.activeAgents);
+    if (agents.length === 0) return;
+
+    const agentId = agents[Math.floor(Math.random() * agents.length)];
+    const zones = ["desk", "hotDesk", "lounge", "meeting"] as const;
+    const toZone = zones[Math.floor(Math.random() * zones.length)];
+
+    const zonePositions: Record<string, { x: number; y: number }[]> = {
+      desk: [
+        { x: 80, y: 80 }, { x: 180, y: 80 }, { x: 280, y: 80 }, { x: 380, y: 80 },
+        { x: 80, y: 180 }, { x: 180, y: 180 }, { x: 280, y: 180 }, { x: 380, y: 180 },
+      ],
+      hotDesk: [
+        { x: 580, y: 280 }, { x: 680, y: 280 }, { x: 780, y: 280 },
+        { x: 580, y: 380 }, { x: 680, y: 380 }, { x: 780, y: 380 },
+      ],
+      lounge: [
+        { x: 580, y: 80 }, { x: 680, y: 80 }, { x: 780, y: 80 },
+        { x: 580, y: 180 }, { x: 680, y: 180 }, { x: 780, y: 180 },
+      ],
+      meeting: [
+        { x: 580, y: 480 }, { x: 680, y: 480 }, { x: 780, y: 480 },
+        { x: 580, y: 580 }, { x: 680, y: 580 }, { x: 780, y: 580 },
+      ],
+    };
+
+    const positions = zonePositions[toZone];
+    const targetPos = positions[Math.floor(Math.random() * positions.length)];
+
+    const path = [
+      { x: targetPos.x - 50 + Math.random() * 100, y: targetPos.y - 50 + Math.random() * 100 },
+      targetPos,
+    ];
+
+    this.emit("agent", {
+      seq: 1,
+      ts: Date.now(),
+      agentId,
+      updates: {
+        movement: {
+          path,
+          progress: 0,
+          duration: 2000 + Math.random() * 2000,
+          startTime: Date.now(),
+          fromZone: "desk",
+          toZone,
+        },
+      },
+    });
+  }
+}
+
 export class MockAdapter implements GatewayAdapter {
   private handlers: Set<AdapterEventHandler> = new Set();
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
@@ -512,8 +604,13 @@ export class MockAdapter implements GatewayAdapter {
   private mockConfig: Record<string, unknown> = mockConfigData();
   private mockHash = Date.now().toString(36);
   private subAgentSimulator: SubAgentSimulator | null = null;
+  private movementSimulator: MovementSimulator | null = null;
+  private mockAgentIds: string[] = [];
 
   async connect(): Promise<void> {
+    // Initialize main mock agents
+    this.mockAgentIds = ["main", "ai-researcher", "coder", "ecommerce"];
+
     this.heartbeatTimer = setInterval(() => {
       for (const h of this.handlers) {
         h("heartbeat", { ts: Date.now() });
@@ -526,6 +623,12 @@ export class MockAdapter implements GatewayAdapter {
       3,
     );
     this.subAgentSimulator.start();
+
+    // Start movement simulator
+    this.movementSimulator = new MovementSimulator(
+      (event, payload) => this.emit(event, payload),
+    );
+    this.movementSimulator.start(this.mockAgentIds);
   }
 
   disconnect(): void {
@@ -535,6 +638,8 @@ export class MockAdapter implements GatewayAdapter {
     }
     this.subAgentSimulator?.stop();
     this.subAgentSimulator = null;
+    this.movementSimulator?.stop();
+    this.movementSimulator = null;
     this.cancelPendingTimers();
     this.handlers.clear();
   }
