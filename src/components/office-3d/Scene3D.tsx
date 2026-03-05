@@ -43,7 +43,7 @@ function OfficePlatform() {
   );
 }
 
-const SCENE_CENTER: [number, number, number] = [8, 4, 6];
+const SCENE_CENTER: [number, number, number] = [-100, 4, -50];
 const BG_LIGHT = new THREE.Color("#e8ecf2");
 const BG_DARK = new THREE.Color("#0f1729");
 
