@@ -2,7 +2,7 @@ import { OrbitControls, Html, useGLTF, Preload } from "@react-three/drei";
 import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
-import { useMemo, useRef, useEffect, Suspense } from "react";
+import { useMemo, useRef, useEffect, Suspense, useState } from "react";
 import * as THREE from "three";
 import { ZONES } from "@/lib/constants";
 import { position2dTo3d } from "@/lib/position-allocator";
@@ -13,8 +13,38 @@ import { Environment3D } from "./Environment3D";
 import { OfficeLayout3D } from "./OfficeLayout3D";
 import { ParentChildLine } from "./ParentChildLine";
 
-function IsometricOffice() {
+function IsometricOffice({ onDeskPositionsFound }: { onDeskPositionsFound?: (positions: THREE.Vector3[]) => void }) {
   const { scene } = useGLTF("/isometric_office.glb");
+  
+  useEffect(() => {
+    const officePos = new THREE.Vector3(15, 0.5, -17);
+    const officeRot = new THREE.Euler(0, Math.PI, 0);
+    const deskPositions: THREE.Vector3[] = [];
+    
+    scene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        const matName = child.material instanceof THREE.MeshStandardMaterial 
+          ? child.material.name 
+          : '';
+        
+        if (matName.includes('Pam_desk') || matName.includes('desk') || matName.includes('wood')) {
+          const worldPos = new THREE.Vector3();
+          child.getWorldPosition(worldPos);
+          worldPos.applyEuler(officeRot).add(officePos);
+          worldPos.y = 0.5;
+          
+          if (!deskPositions.some(p => p.distanceTo(worldPos) < 1)) {
+            deskPositions.push(worldPos);
+          }
+        }
+      }
+    });
+    
+    if (deskPositions.length > 0 && onDeskPositionsFound) {
+      onDeskPositionsFound(deskPositions);
+    }
+  }, [scene, onDeskPositionsFound]);
+  
   return <primitive object={scene} scale={1} position={[15, 0.5, -17]} rotation={[0, Math.PI, 0]} />;
 }
 
@@ -92,7 +122,7 @@ const SCENE_CENTER: [number, number, number] = [15, 4, -17];
 const BG_LIGHT = new THREE.Color("#e8ecf2");
 const BG_DARK = new THREE.Color("#0f1729");
 
-function DeskDebugMarkers() {
+function DeskDebugMarkers({ detectedDesks }: { detectedDesks?: THREE.Vector3[] }) {
   const deskPositions2D = [
     { x: 80, y: 80 }, { x: 180, y: 80 }, { x: 280, y: 80 }, { x: 380, y: 80 },
     { x: 80, y: 180 }, { x: 180, y: 180 }, { x: 280, y: 180 }, { x: 380, y: 180 },
@@ -149,6 +179,12 @@ function DeskDebugMarkers() {
           </mesh>
         );
       })}
+      {detectedDesks && detectedDesks.length > 0 && detectedDesks.map((pos, i) => (
+        <mesh key={`detected-${i}`} position={[pos.x, pos.y, pos.z]}>
+          <boxGeometry args={[0.3, 1.2, 0.3]} />
+          <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={0.8} />
+        </mesh>
+      ))}
     </>
   );
 }
@@ -223,6 +259,7 @@ function SceneContent() {
   const theme = useOfficeStore((s) => s.theme);
   const bloomEnabled = useOfficeStore((s) => s.bloomEnabled);
   const agentList = Array.from(agents.values());
+  const [deskPositions, setDeskPositions] = useState<THREE.Vector3[]>([]);
 
   return (
     <>
@@ -244,9 +281,9 @@ function SceneContent() {
           <Suspense fallback={null}>
           <SunsetIsland />
           <OfficePlatform />
-          <IsometricOffice />
+          <IsometricOffice onDeskPositionsFound={setDeskPositions} />
           <ZoneMarkers />
-          <DeskDebugMarkers />
+          <DeskDebugMarkers detectedDesks={deskPositions} />
           <Preload all />
         </Suspense>
         {/* Old office hidden - using isometric model instead */}
