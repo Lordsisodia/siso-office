@@ -25,18 +25,6 @@ function WaterPlane() {
 
 function SunsetIsland() {
   const { scene } = useGLTF("/sunset_island.glb");
-  
-  const meshData: { name: string; pos: string }[] = [];
-  scene.traverse((child: any) => {
-    if (child.isMesh && child.geometry) {
-      child.updateWorldPosition(new (require('three').Vector3)());
-      const pos = child.getWorldPosition(new (require('three').Vector3)());
-      const name = child.name || child.material?.name || "unnamed";
-      meshData.push({ name, pos: `${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)}` });
-    }
-  });
-  console.log("Island mesh data:", meshData);
-  
   return <primitive object={scene} scale={12} position={[0, 0, 0]} />;
 }
 
