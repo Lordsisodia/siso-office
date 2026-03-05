@@ -354,102 +354,173 @@ function ReceptionDesk3D() {
   );
 }
 
+/** Hexagonal Pod with white walls */
+function HexPod({ 
+  position, 
+  radius = 4, 
+  height = 3,
+  wallColor = "#ffffff",
+  floorColor = "#f0f0f0",
+  label,
+  labelColor = "#2563eb"
+}: { 
+  position: [number, number, number]; 
+  radius?: number;
+  height?: number;
+  wallColor?: string;
+  floorColor?: string;
+  label?: string;
+  labelColor?: string;
+}) {
+  return (
+    <group position={position}>
+      {/* Floor */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
+        <circleGeometry args={[radius, 6]} />
+        <meshStandardMaterial color={floorColor} roughness={0.8} />
+      </mesh>
+      
+      {/* Walls - 6 sides of hexagon */}
+      {Array.from({ length: 6 }).map((_, i) => {
+        const angle = (Math.PI / 3) * i;
+        const nextAngle = (Math.PI / 3) * (i + 1);
+        const midAngle = (angle + nextAngle) / 2;
+        const wallLength = 2 * radius * Math.sin(Math.PI / 6);
+        const x = Math.cos(midAngle) * radius;
+        const z = Math.sin(midAngle) * radius;
+        const rotY = -midAngle + Math.PI / 2;
+        
+        return (
+          <mesh key={i} position={[x, height / 2, z]} rotation={[0, rotY, 0]} castShadow>
+            <boxGeometry args={[wallLength + 0.1, height, 0.1]} />
+            <meshStandardMaterial color={wallColor} roughness={0.7} />
+          </mesh>
+        );
+      })}
+      
+      {/* Label */}
+      {label && (
+        <ZoneLabel position={[0, 0.05, 0]} label={label} color={labelColor} />
+      )}
+    </group>
+  );
+}
+
+/** Corridor connecting pods */
+function Corridor({ start, end, width = 1.5 }: {
+  start: [number, number, number];
+  end: [number, number, number];
+  width?: number;
+}) {
+  const dx = end[0] - start[0];
+  const dz = end[2] - start[2];
+  const length = Math.sqrt(dx * dx + dz * dz);
+  const midX = (start[0] + end[0]) / 2;
+  const midZ = (start[2] + end[2]) / 2;
+  const angle = Math.atan2(dz, dx);
+  
+  return (
+    <mesh position={[midX, 0.02, midZ]} rotation={[-Math.PI / 2, 0, -angle]} receiveShadow>
+      <planeGeometry args={[length, width]} />
+      <meshStandardMaterial color="#e5e7eb" roughness={0.9} />
+    </mesh>
+  );
+}
+
 export function OfficeLayout3D() {
   const { t } = useTranslation("office");
+  
+  // Pod positions - arranged around central meeting pod
+  const centerPod = [8, 0, 6] as [number, number, number];
+  const execPod = [0, 0, 6] as [number, number, number];  // Left
+  const researchPod = [16, 0, 6] as [number, number, number]; // Right  
+  const loungePod = [8, 0, 14] as [number, number, number];  // Bottom
+  
   return (
     <group>
-      {/* === Zone Floor Colors === */}
-      <ZoneFloor position={[3.5, 0.015, 2.8]} size={[6.5, 5]} color="#4a90d9" />
-      <ZoneFloor position={[12, 0.015, 2.8]} size={[6.5, 5]} color="#9060c0" />
-      <ZoneFloor position={[3.5, 0.015, 9]} size={[6.5, 5]} color="#d08030" />
-      <ZoneFloor position={[12, 0.015, 9]} size={[6.5, 5]} color="#40a060" />
-
-      {/* === Zone Labels === */}
-      <ZoneLabel position={[1.5, 0.05, 0.8]} label={t("zones.desk")} color="#2563eb" />
-      <ZoneLabel position={[9.5, 0.05, 0.8]} label={t("zones.meeting")} color="#7c3aed" />
-      <ZoneLabel position={[1.5, 0.05, 6.8]} label={t("zones.hotDesk")} color="#c2410c" />
-      <ZoneLabel position={[9.5, 0.05, 6.8]} label={t("zones.lounge")} color="#15803d" />
-
-      {/* === Desk Zone — 2 rows × 3 columns === */}
-      {[
-        { pos: [1.8, 0, 1.8] as [number, number, number], rot: 0 },
-        { pos: [3.5, 0, 1.8] as [number, number, number], rot: 0 },
-        { pos: [5.2, 0, 1.8] as [number, number, number], rot: 0 },
-        { pos: [1.8, 0, 3.5] as [number, number, number], rot: Math.PI },
-        { pos: [3.5, 0, 3.5] as [number, number, number], rot: Math.PI },
-        { pos: [5.2, 0, 3.5] as [number, number, number], rot: Math.PI },
-      ].map((ws, i) => (
-        <group key={`desk-ws-${i}`}>
-          <Workstation position={ws.pos} rotation={ws.rot} />
-          <OfficeChair
-            position={[ws.pos[0], 0, ws.pos[2] + (ws.rot === 0 ? 0.45 : -0.45)]}
-            rotation={ws.rot}
-            color={i % 2 === 0 ? "#4a5568" : "#3a5068"}
-          />
-        </group>
-      ))}
-
-      {/* === Meeting Zone — hexagonal table + chairs === */}
-      <MeetingTable position={[12, 0, 2.8]} />
+      {/* === Central Meeting Pod === */}
+      <HexPod position={centerPod} radius={4} floorColor="#e0e7ff" label={t("zones.meeting")} labelColor="#7c3aed" />
+      <MeetingTable position={centerPod} />
       {Array.from({ length: 6 }).map((_, i) => {
         const angle = (Math.PI * 2 * i) / 6 - Math.PI / 2;
-        const r = 1.7;
+        const r = 2.2;
         return (
           <OfficeChair
-            key={`meeting-chair-${i}`}
-            position={[12 + Math.cos(angle) * r, 0, 2.8 + Math.sin(angle) * r]}
+            key={`center-chair-${i}`}
+            position={[centerPod[0] + Math.cos(angle) * r, 0, centerPod[2] + Math.sin(angle) * r]}
             rotation={angle + Math.PI}
             color="#3a6080"
           />
         );
       })}
 
-      {/* === Hot Desk Zone — 2 rows × 3 columns === */}
+      {/* === Execution Zone Pod (5 desks) === */}
+      <HexPod position={execPod} radius={4.5} floorColor="#dcfce7" label={t("zones.desk")} labelColor="#2563eb" />
+      {/* Main desk */}
+      <group position={[execPod[0] - 1.5, 0, execPod[2]]}>
+        <Workstation position={[0, 0, 0]} rotation={0} />
+        <OfficeChair position={[0, 0, 0.6]} rotation={0} color="#4a5568" />
+      </group>
+      {/* 4 smaller desks in semicircle */}
+      {[-1, 1].map((side, si) => (
+        [-1, 1].map((back, bi) => (
+          <group key={`exec-desk-${si}-${bi}`} position={[
+            execPod[0] + 1.2 + si * 0.8, 
+            0, 
+            execPod[2] + (bi - 0.5) * 1.8
+          ]}>
+            <Workstation position={[0, 0, 0]} rotation={Math.PI / 2} />
+            <OfficeChair position={[0.5, 0, 0]} rotation={Math.PI / 2} color={si === 0 ? "#3a5068" : "#4a5568"} />
+          </group>
+        ))
+      ))}
+
+      {/* === Research Zone Pod === */}
+      <HexPod position={researchPod} radius={4} floorColor="#fef3c7" label={t("zones.hotDesk")} labelColor="#c2410c" />
+      {/* Research desks */}
       {[
-        { pos: [1.8, 0, 7.8] as [number, number, number], rot: 0 },
-        { pos: [3.5, 0, 7.8] as [number, number, number], rot: 0 },
-        { pos: [5.2, 0, 7.8] as [number, number, number], rot: 0 },
-        { pos: [1.8, 0, 9.8] as [number, number, number], rot: Math.PI },
-        { pos: [3.5, 0, 9.8] as [number, number, number], rot: Math.PI },
-        { pos: [5.2, 0, 9.8] as [number, number, number], rot: Math.PI },
+        { pos: [researchPod[0] - 1.5, researchPod[2] - 1.5], rot: 0 },
+        { pos: [researchPod[0] + 1.5, researchPod[2] - 1.5], rot: 0 },
+        { pos: [researchPod[0] - 1.5, researchPod[2] + 1.5], rot: Math.PI },
+        { pos: [researchPod[0] + 1.5, researchPod[2] + 1.5], rot: Math.PI },
       ].map((ws, i) => (
-        <group key={`hotdesk-ws-${i}`}>
-          <Workstation position={ws.pos} rotation={ws.rot} />
-          <OfficeChair
-            position={[ws.pos[0], 0, ws.pos[2] + (ws.rot === 0 ? 0.45 : -0.45)]}
-            rotation={ws.rot}
-            color="#6a5a4a"
+        <group key={`research-ws-${i}`}>
+          <Workstation position={ws.pos as [number, number, number]} rotation={ws.rot} />
+          <OfficeChair 
+            position={[ws.pos[0], 0, ws.pos[2] + (ws.rot === 0 ? 0.6 : -0.6)]} 
+            rotation={ws.rot} 
+            color="#6a5a4a" 
           />
         </group>
       ))}
 
-      {/* === Lounge Zone — upper half: sofas === */}
-      <Sofa position={[10.5, 0, 7.8]} rotation={0} />
-      <Sofa position={[13, 0, 7.8]} rotation={0} />
-      <Sofa position={[10.5, 0, 8.8]} rotation={Math.PI} />
-      <CoffeeTable position={[11.8, 0, 8.3]} />
-      <Sofa position={[14.5, 0, 8.5]} rotation={Math.PI / 2} />
-
-      {/* === Logo backdrop wall === */}
+      {/* === Lounge Zone Pod (idle area) === */}
+      <HexPod position={loungePod} radius={5} floorColor="#fce7f3" label={t("zones.lounge")} labelColor="#15803d" />
+      {/* Sofas in lounge */}
+      <Sofa position={[loungePod[0] - 2, 0, loungePod[2] - 1]} rotation={0} />
+      <Sofa position={[loungePod[0] + 2, 0, loungePod[2] - 1]} rotation={0} />
+      <Sofa position={[loungePod[0] - 2, 0, loungePod[2] + 1.5]} rotation={Math.PI} />
+      <CoffeeTable position={[loungePod[0], 0, loungePod[2]]} />
+      <Sofa position={[loungePod[0] + 2, 0, loungePod[2] + 1.5]} rotation={Math.PI} />
+      
+      {/* Reception in lounge */}
       <ReceptionWall3D />
-      <Bookshelf position={[10, 0, 10]} />
-      <Bookshelf position={[14, 0, 10]} />
+      <Bookshelf position={[loungePod[0] - 2.5, 0, loungePod[2] + 2]} />
+      <Bookshelf position={[loungePod[0] + 2.5, 0, loungePod[2] + 2]} />
 
-      {/* === Reception desk (curved) === */}
-      <ReceptionDesk3D />
+      {/* === Corridors connecting pods === */}
+      <Corridor start={centerPod} end={execPod} />
+      <Corridor start={centerPod} end={researchPod} />
+      <Corridor start={centerPod} end={loungePod} />
 
       {/* === Plants === */}
       {[
-        [0.5, 0, 0.5],
-        [0.5, 0, 11.5],
-        [7.5, 0, 0.5],
-        [7.5, 0, 11.5],
-        [10, 0, 10],
-        [14, 0, 10],
-        [10, 0, 11.5],
-        [14, 0, 11.5],
+        [execPod[0] - 3.5, execPod[2] + 3],
+        [researchPod[0] + 3.5, researchPod[2] + 3],
+        [loungePod[0] - 3.5, loungePod[2] - 3],
+        [loungePod[0] + 3.5, loungePod[2] - 3],
       ].map((pos, i) => (
-        <group key={`plant-${i}`} position={pos as [number, number, number]}>
+        <group key={`pod-plant-${i}`} position={pos as [number, number, number]}>
           <mesh position={[0, 0.25, 0]}>
             <cylinderGeometry args={[0.12, 0.15, 0.3, 8]} />
             <meshStandardMaterial color="#9a8a7a" roughness={0.8} />
