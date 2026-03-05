@@ -134,11 +134,7 @@ export function Environment3D({ theme = "dark" as ThemeMode }: { theme?: ThemeMo
         <meshStandardMaterial color="#d1d5db" roughness={0.9} />
       </mesh>
 
-      <GlassWall start={[0, 4, 0]} end={[16, 4, 0]} />
-      <GlassWall start={[0, 4, 12]} end={[16, 4, 12]} />
-      <GlassWall start={[0, 4, 0]} end={[0, 4, 12]} />
-      <GlassWall start={[16, 4, 0]} end={[16, 4, 3]} />
-      <GlassWall start={[16, 4, 5]} end={[16, 4, 12]} />
+
     </group>
   );
 }
