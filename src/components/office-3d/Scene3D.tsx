@@ -13,10 +13,18 @@ import { Environment3D } from "./Environment3D";
 import { OfficeLayout3D } from "./OfficeLayout3D";
 import { ParentChildLine } from "./ParentChildLine";
 
+import { Suspense } from "react";
+import { OrbitControls, Html, useGLTF, Preload } from "@react-three/drei";
+
 function IsometricOffice() {
-  const { scene } = useGLTF("/isometric_office.glb");
-  const clonedScene = useMemo(() => scene.clone(true), [scene]);
-  return <primitive object={clonedScene} scale={0.5} position={[-5, 0, -5]} />;
+  try {
+    const { scene } = useGLTF("/isometric_office.glb");
+    const clonedScene = useMemo(() => scene.clone(true), [scene]);
+    return <primitive object={clonedScene} scale={0.3} position={[0, 0, 0]} />;
+  } catch (e) {
+    console.warn("Failed to load isometric office model:", e);
+    return null;
+  }
 }
 
 const SCENE_CENTER: [number, number, number] = [8, 4, 6];
@@ -111,7 +119,10 @@ function SceneContent() {
       />
       <Environment3D theme={theme} />
       <group position={[0, 4, 0]}>
-        <IsometricOffice />
+        <Suspense fallback={null}>
+          <IsometricOffice />
+          <Preload all />
+        </Suspense>
         <OfficeLayout3D />
         {agentList.map((agent) => (
           <AgentCharacter key={agent.id} agent={agent} />
