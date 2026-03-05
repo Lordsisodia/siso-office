@@ -354,10 +354,11 @@ function ReceptionDesk3D() {
   );
 }
 
-/** Hexagonal Pod with white walls and walkthrough openings */
-function HexPod({ 
+/** Square Pod with white walls and walkthrough openings */
+function SquarePod({ 
   position, 
-  radius = 4, 
+  width = 8, 
+  depth = 8,
   height = 3,
   wallColor = "#ffffff",
   floorColor = "#f0f0f0",
@@ -366,55 +367,69 @@ function HexPod({
   openSides = []
 }: { 
   position: [number, number, number]; 
-  radius?: number;
+  width?: number;
+  depth?: number;
   height?: number;
   wallColor?: string;
   floorColor?: string;
   label?: string;
   labelColor?: string;
-  openSides?: number[];
+  openSides?: ("front" | "back" | "left" | "right")[];
 }) {
-  const wallLength = 2 * radius * Math.sin(Math.PI / 6);
+  const halfW = width / 2;
+  const halfD = depth / 2;
+  const wallThickness = 0.08;
   
   return (
     <group position={position}>
       {/* Floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
-        <circleGeometry args={[radius, 6]} />
+        <boxGeometry args={[width, depth, 0.05]} />
         <meshStandardMaterial color={floorColor} roughness={0.8} />
       </mesh>
       
       {/* Corner posts */}
-      {Array.from({ length: 6 }).map((_, i) => {
-        const angle = (Math.PI / 3) * i;
-        const x = Math.cos(angle) * radius;
-        const z = Math.sin(angle) * radius;
-        return (
-          <mesh key={`post-${i}`} position={[x, height / 2, z]} castShadow>
-            <boxGeometry args={[0.15, height, 0.15]} />
-            <meshStandardMaterial color={wallColor} roughness={0.7} />
-          </mesh>
-        );
-      })}
+      {[
+        [-halfW, -halfD], [halfW, -halfD], 
+        [-halfW, halfD], [halfW, halfD]
+      ].map(([x, z], i) => (
+        <mesh key={`post-${i}`} position={[x, height / 2, z]} castShadow>
+          <boxGeometry args={[0.18, height, 0.18]} />
+          <meshStandardMaterial color={wallColor} roughness={0.7} />
+        </mesh>
+      ))}
       
-      {/* Walls - 6 sides of hexagon, with gaps for walkthrough */}
-      {Array.from({ length: 6 }).map((_, i) => {
-        if (openSides.includes(i)) return null;
-        
-        const angle = (Math.PI / 3) * i;
-        const nextAngle = (Math.PI / 3) * (i + 1);
-        const midAngle = (angle + nextAngle) / 2;
-        const x = Math.cos(midAngle) * radius;
-        const z = Math.sin(midAngle) * radius;
-        const rotY = -midAngle + Math.PI / 2;
-        
-        return (
-          <mesh key={i} position={[x, height / 2, z]} rotation={[0, rotY, 0]} castShadow>
-            <boxGeometry args={[wallLength - 0.3, height, 0.08]} />
-            <meshStandardMaterial color={wallColor} roughness={0.7} />
-          </mesh>
-        );
-      })}
+      {/* Front wall */}
+      {!openSides.includes("front") && (
+        <mesh position={[0, height / 2, -halfD]} castShadow>
+          <boxGeometry args={[width, height, wallThickness]} />
+          <meshStandardMaterial color={wallColor} roughness={0.7} />
+        </mesh>
+      )}
+      
+      {/* Back wall */}
+      {!openSides.includes("back") && (
+        <mesh position={[0, height / 2, halfD]} castShadow>
+          <boxGeometry args={[width, height, wallThickness]} />
+          <meshStandardMaterial color={wallColor} roughness={0.7} />
+        </mesh>
+      )}
+      
+      {/* Left wall */}
+      {!openSides.includes("left") && (
+        <mesh position={[-halfW, height / 2, 0]} castShadow>
+          <boxGeometry args={[wallThickness, height, depth]} />
+          <meshStandardMaterial color={wallColor} roughness={0.7} />
+        </mesh>
+      )}
+      
+      {/* Right wall */}
+      {!openSides.includes("right") && (
+        <mesh position={[halfW, height / 2, 0]} castShadow>
+          <boxGeometry args={[wallThickness, height, depth]} />
+          <meshStandardMaterial color={wallColor} roughness={0.7} />
+        </mesh>
+      )}
       
       {/* Label */}
       {label && (
@@ -463,15 +478,15 @@ export function OfficeLayout3D() {
   const { t } = useTranslation("office");
   
   // Pod positions - arranged around central meeting pod
-  const centerPod = [8, 0, 6] as [number, number, number];
-  const execPod = [0, 0, 6] as [number, number, number];  // Left
-  const researchPod = [16, 0, 6] as [number, number, number]; // Right  
-  const loungePod = [8, 0, 14] as [number, number, number];  // Bottom
+  const centerPod = [10, 0, 6] as [number, number, number];
+  const execPod = [-4, 0, 6] as [number, number, number];  // Left
+  const researchPod = [24, 0, 6] as [number, number, number]; // Right  
+  const loungePod = [10, 0, 18] as [number, number, number];  // Bottom
   
   return (
     <group>
       {/* === Central Meeting Pod === */}
-      <HexPod position={centerPod} radius={4} floorColor="#e0e7ff" label={t("zones.meeting")} labelColor="#7c3aed" openSides={[0, 1, 3]} />
+      <SquarePod position={centerPod} width={10} depth={10} floorColor="#e0e7ff" label={t("zones.meeting")} labelColor="#7c3aed" openSides={["right"]} />
       <MeetingTable position={centerPod} />
       {Array.from({ length: 6 }).map((_, i) => {
         const angle = (Math.PI * 2 * i) / 6 - Math.PI / 2;
@@ -487,7 +502,7 @@ export function OfficeLayout3D() {
       })}
 
       {/* === Execution Zone Pod (5 desks) === */}
-      <HexPod position={execPod} radius={4.5} floorColor="#dcfce7" label={t("zones.desk")} labelColor="#2563eb" openSides={[3]} />
+      <SquarePod position={execPod} width={10} depth={10} floorColor="#dcfce7" label={t("zones.desk")} labelColor="#2563eb" openSides={["right"]} />
       {/* Main desk */}
       <group position={[execPod[0] - 1.5, 0, execPod[2]]}>
         <Workstation position={[0, 0, 0]} rotation={0} />
@@ -508,7 +523,7 @@ export function OfficeLayout3D() {
       ))}
 
       {/* === Research Zone Pod === */}
-      <HexPod position={researchPod} radius={4} floorColor="#fef3c7" label={t("zones.hotDesk")} labelColor="#c2410c" openSides={[0]} />
+      <SquarePod position={researchPod} width={10} depth={10} floorColor="#fef3c7" label={t("zones.hotDesk")} labelColor="#c2410c" openSides={["left"]} />
       {/* Research desks */}
       {[
         { pos: [researchPod[0] - 1.5, researchPod[2] - 1.5], rot: 0 },
@@ -527,7 +542,7 @@ export function OfficeLayout3D() {
       ))}
 
       {/* === Lounge Zone Pod (idle area) === */}
-      <HexPod position={loungePod} radius={5} floorColor="#fce7f3" label={t("zones.lounge")} labelColor="#15803d" openSides={[1]} />
+      <SquarePod position={loungePod} width={12} depth={10} floorColor="#fce7f3" label={t("zones.lounge")} labelColor="#15803d" openSides={["front"]} />
       {/* Sofas in lounge */}
       <Sofa position={[loungePod[0] - 2, 0, loungePod[2] - 1]} rotation={0} />
       <Sofa position={[loungePod[0] + 2, 0, loungePod[2] - 1]} rotation={0} />
