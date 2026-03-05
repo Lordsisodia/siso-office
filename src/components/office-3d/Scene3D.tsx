@@ -23,6 +23,11 @@ function WaterPlane() {
   return <primitive object={scene} scale={1.5} position={[10, -0.5, 6]} />;
 }
 
+function SunsetIsland() {
+  const { scene } = useGLTF("/sunset_island.glb");
+  return <primitive object={scene} scale={1} position={[10, 0, 6]} />;
+}
+
 const SCENE_CENTER: [number, number, number] = [8, 4, 6];
 const BG_LIGHT = new THREE.Color("#e8ecf2");
 const BG_DARK = new THREE.Color("#0f1729");
@@ -116,8 +121,9 @@ function SceneContent() {
       <Environment3D theme={theme} />
       <group position={[0, 4, 0]}>
         <Suspense fallback={null}>
+          <SunsetIsland />
           <IsometricOffice />
-          <WaterPlane />
+          {/* <WaterPlane /> */}
           <Preload all />
         </Suspense>
         {/* Old office hidden - using isometric model instead */}

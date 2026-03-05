@@ -135,10 +135,11 @@ export function Environment3D({ theme = "dark" as ThemeMode }: { theme?: ThemeMo
 function Skylines() {
   return (
     <group>
-      <Ocean />
+      {/* Old backgrounds hidden - using sunset_island instead */}
+      {/* <Ocean />
       <Island />
       <DistantIslands />
-      <Clouds />
+      <Clouds /> */}
     </group>
   );
 }
