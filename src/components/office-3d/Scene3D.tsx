@@ -43,7 +43,7 @@ function OfficePlatform() {
   );
 }
 
-const SCENE_CENTER: [number, number, number] = [19, 4, -20];
+const SCENE_CENTER: [number, number, number] = [15, 4, -17];
 const BG_LIGHT = new THREE.Color("#e8ecf2");
 const BG_DARK = new THREE.Color("#0f1729");
 
@@ -143,8 +143,7 @@ function SceneContent() {
         </Suspense>
         {/* Old office hidden - using isometric model instead */}
         {/* <OfficeLayout3D /> */}
-        {/* Agents hidden for now */}
-        {/* {agentList.map((agent) => (
+        {agentList.map((agent) => (
           <AgentCharacter key={agent.id} agent={agent} />
         ))}
         {agentList
@@ -156,7 +155,7 @@ function SceneContent() {
             }
             return <ParentChildLine key={`line-${child.id}`} parent={parent} child={child} />;
           })}
-        <MeetingLabels /> */}
+        <MeetingLabels />
       </group>
       {bloomEnabled && (
         <EffectComposer>
