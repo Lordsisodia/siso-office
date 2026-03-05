@@ -1,8 +1,8 @@
-import { OrbitControls, Html, useGLTF } from "@react-three/drei";
+import { OrbitControls, Html, useGLTF, Preload } from "@react-three/drei";
 import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
-import { useMemo, useRef, useEffect } from "react";
+import { useMemo, useRef, useEffect, Suspense } from "react";
 import * as THREE from "three";
 import { ZONES } from "@/lib/constants";
 import { position2dTo3d } from "@/lib/position-allocator";
@@ -12,9 +12,6 @@ import { AgentCharacter } from "./AgentCharacter";
 import { Environment3D } from "./Environment3D";
 import { OfficeLayout3D } from "./OfficeLayout3D";
 import { ParentChildLine } from "./ParentChildLine";
-
-import { Suspense } from "react";
-import { OrbitControls, Html, useGLTF, Preload } from "@react-three/drei";
 
 function IsometricOffice() {
   try {
