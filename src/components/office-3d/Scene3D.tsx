@@ -1,5 +1,6 @@
-import { OrbitControls, Html } from "@react-three/drei";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { OrbitControls, Html, useGLTF } from "@react-three/drei";
+import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { useMemo, useRef, useEffect } from "react";
 import * as THREE from "three";
@@ -11,6 +12,12 @@ import { AgentCharacter } from "./AgentCharacter";
 import { Environment3D } from "./Environment3D";
 import { OfficeLayout3D } from "./OfficeLayout3D";
 import { ParentChildLine } from "./ParentChildLine";
+
+function IsometricOffice() {
+  const { scene } = useGLTF("/isometric_office.glb");
+  const clonedScene = useMemo(() => scene.clone(true), [scene]);
+  return <primitive object={clonedScene} scale={0.5} position={[-5, 0, -5]} />;
+}
 
 const SCENE_CENTER: [number, number, number] = [8, 4, 6];
 const BG_LIGHT = new THREE.Color("#e8ecf2");
@@ -104,6 +111,7 @@ function SceneContent() {
       />
       <Environment3D theme={theme} />
       <group position={[0, 4, 0]}>
+        <IsometricOffice />
         <OfficeLayout3D />
         {agentList.map((agent) => (
           <AgentCharacter key={agent.id} agent={agent} />
