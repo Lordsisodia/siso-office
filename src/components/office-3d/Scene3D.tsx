@@ -114,8 +114,10 @@ function SceneContent() {
           <IsometricOffice />
           <Preload all />
         </Suspense>
-        <OfficeLayout3D />
-        {agentList.map((agent) => (
+        {/* Old office hidden - using isometric model instead */}
+        {/* <OfficeLayout3D /> */}
+        {/* Agents hidden for now */}
+        {/* {agentList.map((agent) => (
           <AgentCharacter key={agent.id} agent={agent} />
         ))}
         {agentList
@@ -127,7 +129,7 @@ function SceneContent() {
             }
             return <ParentChildLine key={`line-${child.id}`} parent={parent} child={child} />;
           })}
-        <MeetingLabels />
+        <MeetingLabels /> */}
       </group>
       {bloomEnabled && (
         <EffectComposer>
