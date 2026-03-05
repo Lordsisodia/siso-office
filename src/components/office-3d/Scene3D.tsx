@@ -18,6 +18,11 @@ function IsometricOffice() {
   return <primitive object={scene} scale={1} position={[10, 0, 6]} />;
 }
 
+function WaterPlane() {
+  const { scene } = useGLTF("/plane_water_low.glb");
+  return <primitive object={scene} scale={1.5} position={[10, -1, 6]} />;
+}
+
 const SCENE_CENTER: [number, number, number] = [8, 4, 6];
 const BG_LIGHT = new THREE.Color("#e8ecf2");
 const BG_DARK = new THREE.Color("#0f1729");
@@ -112,6 +117,7 @@ function SceneContent() {
       <group position={[0, 4, 0]}>
         <Suspense fallback={null}>
           <IsometricOffice />
+          <WaterPlane />
           <Preload all />
         </Suspense>
         {/* Old office hidden - using isometric model instead */}
