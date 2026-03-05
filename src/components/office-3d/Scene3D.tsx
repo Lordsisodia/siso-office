@@ -38,7 +38,7 @@ function IsometricOffice({ onDeskPositionsFound }: { onDeskPositionsFound?: (pos
           const worldPos = new THREE.Vector3();
           child.getWorldPosition(worldPos);
           worldPos.applyEuler(officeRot).add(officePos);
-          worldPos.y = 0.5;
+          worldPos.y = 1.5;
           
           if (!deskPositions.some(p => p.distanceTo(worldPos) < 1.5)) {
             deskPositions.push(worldPos);
@@ -47,9 +47,10 @@ function IsometricOffice({ onDeskPositionsFound }: { onDeskPositionsFound?: (pos
       }
     });
     
-    console.log('Auto-detected positions:', deskPositions.length, deskPositions.map(p => ({ x: p.x.toFixed(2), z: p.z.toFixed(2) })));
+    console.log('Auto-detected positions:', deskPositions.length, deskPositions.map(p => ({ x: p.x.toFixed(1), y: p.y.toFixed(1), z: p.z.toFixed(1) })));
     
     if (deskPositions.length > 0 && onDeskPositionsFound) {
+      console.log('Calling callback with', deskPositions.length, 'positions');
       onDeskPositionsFound(deskPositions);
     }
   }, [scene, onDeskPositionsFound]);
@@ -188,12 +189,19 @@ function DeskDebugMarkers({ detectedDesks }: { detectedDesks?: THREE.Vector3[] }
           </mesh>
         );
       })}
-      {detectedDesks && detectedDesks.length > 0 && detectedDesks.map((pos, i) => (
-        <mesh key={`detected-${i}`} position={[pos.x, 4, pos.z]}>
-          <boxGeometry args={[0.5, 0.5, 0.5]} />
-          <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={1} />
+      {detectedDesks && detectedDesks.length > 0 ? (
+        detectedDesks.map((pos, i) => (
+          <mesh key={`detected-${i}`} position={[pos.x, pos.y, pos.z]}>
+            <boxGeometry args={[0.3, 0.3, 0.3]} />
+            <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={1} />
+          </mesh>
+        ))
+      ) : (
+        <mesh position={[15, 3, -17]}>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshStandardMaterial color="#ffff00" emissive="#ffff00" emissiveIntensity={1} />
         </mesh>
-      ))}
+      )}
     </>
   );
 }
