@@ -15,7 +15,7 @@ import { ParentChildLine } from "./ParentChildLine";
 
 function IsometricOffice() {
   const { scene } = useGLTF("/isometric_office.glb");
-  return <primitive object={scene} scale={1} position={[-100, 0.5, -50]} />;
+  return <primitive object={scene} scale={1} position={[30, 0.5, -20]} />;
 }
 
 function WaterPlane() {
@@ -25,12 +25,12 @@ function WaterPlane() {
 
 function SunsetIsland() {
   const { scene } = useGLTF("/sunset_island.glb");
-  return <primitive object={scene} scale={12} position={[-100, 0, -50]} />;
+  return <primitive object={scene} scale={12} position={[0, 0, 0]} />;
 }
 
 function OfficePlatform() {
   return (
-    <group position={[-100, -2, -50]}>
+    <group position={[30, -2, -20]}>
       <mesh castShadow receiveShadow>
         <cylinderGeometry args={[8, 10, 1, 32]} />
         <meshStandardMaterial color="#c4a882" roughness={0.8} />
@@ -43,7 +43,7 @@ function OfficePlatform() {
   );
 }
 
-const SCENE_CENTER: [number, number, number] = [-100, 4, -50];
+const SCENE_CENTER: [number, number, number] = [8, 4, 6];
 const BG_LIGHT = new THREE.Color("#e8ecf2");
 const BG_DARK = new THREE.Color("#0f1729");
 
