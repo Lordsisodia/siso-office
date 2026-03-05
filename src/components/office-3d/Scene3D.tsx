@@ -23,22 +23,31 @@ function IsometricOffice({ onDeskPositionsFound }: { onDeskPositionsFound?: (pos
     
     scene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        const matName = child.material instanceof THREE.MeshStandardMaterial 
-          ? child.material.name 
-          : '';
+        let matName = '';
         
-        if (matName.includes('Pam_desk') || matName.includes('desk') || matName.includes('wood')) {
+        if (Array.isArray(child.material)) {
+          matName = child.material.map(m => m.name).join(' ');
+        } else if (child.material instanceof THREE.MeshStandardMaterial) {
+          matName = child.material.name;
+        }
+        
+        const searchTerms = ['Pam_desk', 'desk', 'wood', 'Chair', 'chair', 'OfficeChair', 'Monitor'];
+        const matches = searchTerms.some(term => matName.includes(term));
+        
+        if (matches) {
           const worldPos = new THREE.Vector3();
           child.getWorldPosition(worldPos);
           worldPos.applyEuler(officeRot).add(officePos);
           worldPos.y = 0.5;
           
-          if (!deskPositions.some(p => p.distanceTo(worldPos) < 1)) {
+          if (!deskPositions.some(p => p.distanceTo(worldPos) < 1.5)) {
             deskPositions.push(worldPos);
           }
         }
       }
     });
+    
+    console.log('Auto-detected positions:', deskPositions.length, deskPositions.map(p => ({ x: p.x.toFixed(2), z: p.z.toFixed(2) })));
     
     if (deskPositions.length > 0 && onDeskPositionsFound) {
       onDeskPositionsFound(deskPositions);
