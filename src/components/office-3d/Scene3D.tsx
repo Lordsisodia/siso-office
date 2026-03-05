@@ -25,7 +25,7 @@ function WaterPlane() {
 
 function SunsetIsland() {
   const { scene } = useGLTF("/sunset_island.glb");
-  return <primitive object={scene} scale={1} position={[10, 0, 6]} />;
+  return <primitive object={scene} scale={12} position={[10, 0, 6]} />;
 }
 
 const SCENE_CENTER: [number, number, number] = [8, 4, 6];
