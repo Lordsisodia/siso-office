@@ -15,12 +15,12 @@ import { ParentChildLine } from "./ParentChildLine";
 
 function IsometricOffice() {
   const { scene } = useGLTF("/isometric_office.glb");
-  return <primitive object={scene} scale={1} position={[10, 0, 6]} />;
+  return <primitive object={scene} scale={1} position={[10, 1.5, 6]} />;
 }
 
 function WaterPlane() {
   const { scene } = useGLTF("/plane_water_low.glb");
-  return <primitive object={scene} scale={1.5} position={[10, -1, 6]} />;
+  return <primitive object={scene} scale={1.5} position={[10, -0.5, 6]} />;
 }
 
 const SCENE_CENTER: [number, number, number] = [8, 4, 6];

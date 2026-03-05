@@ -114,27 +114,20 @@ export function Environment3D({ theme = "dark" as ThemeMode }: { theme?: ThemeMo
   return (
     <group>
       <ThemeLighting theme={theme} />
-
       <Skylines />
-
-      {/* Platform base - cylinder */}
-      <mesh position={[8, 2, 6]} castShadow receiveShadow>
+      {/* Old platform/floor hidden - using isometric model instead */}
+      {/* <mesh position={[8, 2, 6]} castShadow receiveShadow>
         <cylinderGeometry args={[12, 14, 4, 32]} />
         <meshStandardMaterial color="#9ca3af" roughness={0.9} />
       </mesh>
-
-      {/* Office floor on top of platform */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[8, 4.05, 6]} receiveShadow>
         <circleGeometry args={[9, 32]} />
         <meshStandardMaterial color="#e5e7eb" roughness={0.8} />
       </mesh>
-      
       <mesh position={[8, 4.1, 6]}>
         <boxGeometry args={[18, 0.1, 14]} />
         <meshStandardMaterial color="#d1d5db" roughness={0.9} />
-      </mesh>
-
-
+      </mesh> */}
     </group>
   );
 }
