@@ -25,6 +25,19 @@ function WaterPlane() {
 
 function SunsetIsland() {
   const { scene } = useGLTF("/sunset_island.glb");
+  
+  const meshNames: string[] = [];
+  scene.traverse((child: any) => {
+    if (child.isMesh) {
+      const name = child.name?.toLowerCase() || "";
+      meshNames.push(child.name || "unnamed");
+      if (name.includes("tree") || name.includes("palm") || name.includes("foliage")) {
+        child.visible = false;
+      }
+    }
+  });
+  console.log("Island meshes:", meshNames);
+  
   return <primitive object={scene} scale={12} position={[0, 0, 0]} />;
 }
 
