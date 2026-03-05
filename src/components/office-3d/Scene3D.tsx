@@ -15,7 +15,7 @@ import { ParentChildLine } from "./ParentChildLine";
 
 function IsometricOffice() {
   const { scene } = useGLTF("/isometric_office.glb");
-  return <primitive object={scene} scale={1} position={[-2, 0.5, 20]} />;
+  return <primitive object={scene} scale={1} position={[-20, 0.5, 0]} />;
 }
 
 function WaterPlane() {
@@ -25,12 +25,12 @@ function WaterPlane() {
 
 function SunsetIsland() {
   const { scene } = useGLTF("/sunset_island.glb");
-  return <primitive object={scene} scale={12} position={[-2, 0, 20]} />;
+  return <primitive object={scene} scale={12} position={[-20, 0, 0]} />;
 }
 
 function OfficePlatform() {
   return (
-    <group position={[-2, -2, 20]}>
+    <group position={[-20, -2, 0]}>
       <mesh castShadow receiveShadow>
         <cylinderGeometry args={[8, 10, 1, 32]} />
         <meshStandardMaterial color="#c4a882" roughness={0.8} />
