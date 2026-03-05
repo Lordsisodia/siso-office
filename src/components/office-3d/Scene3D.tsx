@@ -189,9 +189,9 @@ function DeskDebugMarkers({ detectedDesks }: { detectedDesks?: THREE.Vector3[] }
         );
       })}
       {detectedDesks && detectedDesks.length > 0 && detectedDesks.map((pos, i) => (
-        <mesh key={`detected-${i}`} position={[pos.x, pos.y, pos.z]}>
-          <boxGeometry args={[0.3, 1.2, 0.3]} />
-          <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={0.8} />
+        <mesh key={`detected-${i}`} position={[pos.x, 4, pos.z]}>
+          <boxGeometry args={[0.5, 0.5, 0.5]} />
+          <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={1} />
         </mesh>
       ))}
     </>
