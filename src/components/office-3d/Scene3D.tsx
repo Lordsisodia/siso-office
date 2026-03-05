@@ -43,6 +43,45 @@ function OfficePlatform() {
   );
 }
 
+function ZoneMarkers() {
+  const zoneMarkers = [
+    { key: "desk", label: "Desk Zone", color: "#3b82f6" },
+    { key: "meeting", label: "Meeting", color: "#8b5cf6" },
+    { key: "hotDesk", label: "Hot Desk", color: "#10b981" },
+    { key: "lounge", label: "Lounge", color: "#f59e0b" },
+  ];
+
+  return (
+    <>
+      {zoneMarkers.map((zone) => {
+        const z = ZONES[zone.key as keyof typeof ZONES];
+        const centerX = z.x + z.width / 2;
+        const centerY = z.y + z.height / 2;
+        const [x, , zPos] = position2dTo3d({ x: centerX, y: centerY });
+
+        return (
+          <Html key={zone.key} position={[x, 3, zPos]} center transform={false}>
+            <div
+              style={{
+                backgroundColor: zone.color,
+                padding: "4px 8px",
+                borderRadius: "4px",
+                fontSize: "10px",
+                color: "white",
+                fontWeight: "bold",
+                whiteSpace: "nowrap",
+                opacity: 0.8,
+              }}
+            >
+              {zone.label}
+            </div>
+          </Html>
+        );
+      })}
+    </>
+  );
+}
+
 const SCENE_CENTER: [number, number, number] = [15, 4, -17];
 const BG_LIGHT = new THREE.Color("#e8ecf2");
 const BG_DARK = new THREE.Color("#0f1729");
@@ -135,10 +174,11 @@ function SceneContent() {
       />
       <Environment3D theme={theme} />
       <group position={[0, 4, 0]}>
-        <Suspense fallback={null}>
+          <Suspense fallback={null}>
           <SunsetIsland />
           <OfficePlatform />
           <IsometricOffice />
+          <ZoneMarkers />
           <Preload all />
         </Suspense>
         {/* Old office hidden - using isometric model instead */}
